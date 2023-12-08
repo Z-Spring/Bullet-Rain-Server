@@ -30,7 +30,9 @@ func Send(clientInfo *ClientInfo, base msg.MsgBase) {
 	//if clientInfo.Conn != nil {
 	//	return
 	//}
-	base = msg.ConvertMsgBase(base)
+
+	//don't need to convert
+	//base = msg.ConvertMsgBase(base)
 
 	name := msg.EncodeName(base)
 	if string(name) == "MsgResult" {
