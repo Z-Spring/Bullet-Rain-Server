@@ -3,7 +3,6 @@ package msg
 import (
 	"encoding/json"
 	"log"
-	"reflect"
 
 	"BulletRain_server/msgProto"
 )
@@ -23,7 +22,7 @@ func Encode(msgBase MsgBase) []byte {
 	return s
 }
 
-var nameToType = map[string]reflect.Type{
+/*var nameToType = map[string]reflect.Type{
 	"MsgPing": reflect.TypeOf((*msgProto.MsgPing)(nil)).Elem(),
 	"MsgPong": reflect.TypeOf((*msgProto.MsgPong)(nil)).Elem(),
 
@@ -51,9 +50,41 @@ var nameToType = map[string]reflect.Type{
 	"MsgGetGameTime":        reflect.TypeOf((*msgProto.MsgGetGameTime)(nil)).Elem(),
 	"MsgSwitchWeapon":       reflect.TypeOf((*msgProto.MsgSwitchWeapon)(nil)).Elem(),
 	"MsgSyncWeaponPosition": reflect.TypeOf((*msgProto.MsgSyncWeaponPosition)(nil)).Elem(),
+}*/
+
+// todo: don't use reflect
+var nameToType2 = map[string]MsgBase{
+	"MsgPing": &msgProto.MsgPing{},
+	"MsgPong": &msgProto.MsgPong{},
+
+	"MsgLogin":    &msgProto.MsgLogin{},
+	"MsgRegister": &msgProto.MsgRegister{},
+	"MsgKick":     &msgProto.MsgKick{},
+
+	"MsgEnterBattle":  &msgProto.MsgEnterBattle{},
+	"MsgStartBattle":  &msgProto.MsgStartBattle{},
+	"MsgLeaveBattle":  &msgProto.MsgLeaveBattle{},
+	"MsgBattleResult": &msgProto.MsgBattleResult{},
+
+	"MsgEnterRoom":   &msgProto.MsgEnterRoom{},
+	"MsgLeaveRoom":   &msgProto.MsgLeaveRoom{},
+	"MsgGetRoomList": &msgProto.MsgGetRoomList{},
+	"MsgCreateRoom":  &msgProto.MsgCreateRoom{},
+	"MsgGetAchieve":  &msgProto.MsgGetAchieve{},
+	"MsgGetRoomInfo": &msgProto.MsgGetRoomInfo{},
+
+	"MsgSyncPlayer": &msgProto.MsgSyncPlayer{},
+	"MsgFire":       &msgProto.MsgFire{},
+	"MsgHit":        &msgProto.MsgHit{},
+
+	"MsgResult":             &msgProto.MsgResult{},
+	"MsgGetGameTime":        &msgProto.MsgGetGameTime{},
+	"MsgSwitchWeapon":       &msgProto.MsgSwitchWeapon{},
+	"MsgSyncWeaponPosition": &msgProto.MsgSyncWeaponPosition{},
 }
 
-func Decode(protoName string, bytes []byte, beginIndex, count int) MsgBase {
+// todo: don't use reflect
+/*func Decode2(protoName string, bytes []byte, beginIndex, count int) MsgBase {
 	newBytes := bytes[beginIndex : count+beginIndex]
 	typeObj, ok := nameToType[protoName]
 	if !ok {
@@ -61,6 +92,21 @@ func Decode(protoName string, bytes []byte, beginIndex, count int) MsgBase {
 		return nil
 	}
 	msgBase := reflect.New(typeObj).Interface().(MsgBase)
+	if err := json.Unmarshal(newBytes, &msgBase); err != nil {
+		log.Println("json unmarshal fail")
+	}
+
+	return msgBase
+
+}*/
+
+func Decode(protoName string, bytes []byte, beginIndex, count int) MsgBase {
+	newBytes := bytes[beginIndex : count+beginIndex]
+	msgBase, ok := nameToType2[protoName]
+	if !ok {
+		log.Printf("protoName [%s] is not exist\n", protoName)
+		return nil
+	}
 	if err := json.Unmarshal(newBytes, &msgBase); err != nil {
 		log.Println("json unmarshal fail")
 	}
