@@ -5,12 +5,20 @@ import (
 	"log"
 
 	"BulletRain_server/database"
+	"BulletRain_server/msg"
 	"BulletRain_server/msgProto"
 )
 
 var Pm = PlayerManager{}
 
-func (h *MsgHandler) MsgLogin(info *ClientInfo, msgLogin *msgProto.MsgLogin) {
+// MsgLogin /*func (h *MsgHandler) MsgLogin2(info *ClientInfo, msgLogin *msgProto.MsgLogin) {
+// todo: use func mapping and type insert
+func (h *MsgHandler) MsgLogin(info *ClientInfo, base msg.MsgBase) {
+	msgLogin, ok := base.(*msgProto.MsgLogin)
+	if !ok {
+		log.Println("MsgLogin convert error")
+		return
+	}
 	if !database.CheckPassword(msgLogin.Id, msgLogin.Pw) {
 		msgLogin.Result = 1
 		Send(info, msgLogin)
