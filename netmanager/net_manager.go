@@ -16,28 +16,35 @@ import (
 	"BulletRain_server/receiveMsgHandler"
 )
 
+type MsgHandlerFunc func(*receiveMsgHandler.ClientInfo, msg.MsgBase)
+
 var (
-	clients = make(map[net.Conn]*receiveMsgHandler.ClientInfo)
-	methods = make(map[string]reflect.Value)
-	m       reflect.Value
+	clients         = make(map[net.Conn]*receiveMsgHandler.ClientInfo)
+	methods         = make(map[string]reflect.Value)
+	msgHandlerFuncs = make(map[string]MsgHandlerFunc)
+	m               reflect.Value
 )
 
 const pingInterval = 30 * time.Second
+
 const DEFAULT_SIZE = 1024
 
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-
 	// todo
 	handler := &receiveMsgHandler.MsgHandler{}
-	typ := reflect.TypeOf(handler)
+	msgHandlerFuncs["MsgLogin"] = handler.MsgLogin
+	// todo: use func mapping instead of reflect
+	// todo : can modify this
+	/*typ := reflect.TypeOf(handler)
 	val := reflect.ValueOf(handler)
 	for i := 0; i < typ.NumMethod(); i++ {
 		method := typ.Method(i)
 		m = val.Method(i)
 
 		methods[method.Name] = m
-	}
+	}*/
+
 }
 
 func NetManager(port int) {
@@ -168,7 +175,7 @@ func OnReceiveData(clientInfo *receiveMsgHandler.ClientInfo) {
 
 		readBuff.CheckAndMoveBytes()
 
-		if method, ok := methods[protoName]; ok {
+		/*if method, ok := methods[protoName]; ok {
 			clientInfo := reflect.ValueOf(clientInfo)
 			//base := msg.ConvertMsgBase(base)
 			base := reflect.ValueOf(base)
@@ -177,6 +184,10 @@ func OnReceiveData(clientInfo *receiveMsgHandler.ClientInfo) {
 				base,
 			}
 			method.Call(args)
+		}*/
+
+		if msgHandlerFunc, ok := msgHandlerFuncs[protoName]; ok {
+			msgHandlerFunc(clientInfo, base)
 		}
 
 		if readBuff.Length() <= 2 {
